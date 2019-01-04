@@ -1,39 +1,48 @@
 import numpy as np
-import csv
-import tqdm
 import matplotlib.pyplot as plt
-def makefloatarray(row):
-    k = row[0].split()
-    l = []
-    for blah in k:
-        try:
-            l.append(float(blah))
-        except ValueError:
-            print(k)
-            break
-    return l
-
-def filereader(csvfile):
-    spice_cl = []
-    readCSV = csv.reader(csvfile,delimiter='\n')  
-    for row in tqdm.tqdm(readCSV):
-        l = makefloatarray(row)
-        if l != []:
-            spice_cl.append(l)
-            
-    return np.array(spice_cl)
-with open('./cmb-power-spectrum.txt') as csvfile:
-    spectra = filereader(csvfile)
-    l = spectra.T[0]
-    tt = spectra.T[1]
-    te = spectra.T[2]
-    ee = spectra.T[3]
-    bb = spectra.T[4]
-    pp = spectra.T[5]
-
+from essentials import *
 import healpy as hp
-skymap = hp.synfast(tt,32,new=True)
-print(skymap)
-print(len(skymap))
+NSIDE = 32
+def give_skymap(batch):
+    with open('./cmb-power-spectrum.txt') as csvfile:
+        spectra = filereader(csvfile)
+        l = spectra.T[0]
+        tt = spectra.T[1]
+        te = spectra.T[2]
+        ee = spectra.T[3]
+        bb = spectra.T[4]
+        pp = spectra.T[5]
+    
+    batch_map=[]
+    k = 0
+    for _ in range(batch):
+        skymap = hp.synfast(tt,NSIDE,new=True,verbose=False)
+        skymap.resize(split(len(skymap)))
+        batch_map.append(skymap) 
 
+    return batch_map
+
+def give_badskymap(batch,fnl=1e-4):
+    with open('./cmb-power-spectrum.txt') as csvfile:
+        spectra = filereader(csvfile)
+        l = spectra.T[0]
+        tt = spectra.T[1]
+        te = spectra.T[2]
+        ee = spectra.T[3]
+        bb = spectra.T[4]
+        pp = spectra.T[5]
+    
+    batch_map=[]
+    k = 0
+    for _ in range(batch):
+        skymap = np.array(hp.synfast(tt,NSIDE,new=True,verbose=False))
+        sqmap = np.square(skymap)
+        skymap = skymap + (fnl/2.725)*(sqmap - np.full_like(skymap,np.mean(sqmap)))
+        skymap.resize(split(len(skymap)))
+        batch_map.append(skymap) 
+
+    return batch_map
+
+def get_res():
+    return split(hp.nside2npix(NSIDE))
 

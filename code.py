@@ -1,9 +1,10 @@
 import tensorflow.contrib.layers as lays
+from map_gen import *
 
 batch_size = 500  # Number of samples in each batch
-epoch_num = 5     # Number of epochs to train the network
+epoch_num = 10     # Number of epochs to train the network
 lr = 0.001        # Learning rate
-
+xres,yres,_ = get_res()
 
 def autoencoder(inputs):
     # encoder
@@ -13,36 +14,22 @@ def autoencoder(inputs):
     net = lays.conv2d(inputs, 32, [5, 5], stride=2, padding='SAME')
     net = lays.conv2d(net, 16, [5, 5], stride=2, padding='SAME')
     net = lays.conv2d(net, 8, [5, 5], stride=4, padding='SAME')
-    net = lays.fully_connected(net,16)
+    net = lays.fully_connected(net,36)
     # decoder
     # 2 x 2 x 8    ->  8 x 8 x 16
     # 8 x 8 x 16   ->  16 x 16 x 32
     # 16 x 16 x 32  ->  32 x 32 x 1
-    net = lays.fully_connected(net,32)
+    net = lays.fully_connected(net,48)
     net = lays.conv2d_transpose(net, 16, [5, 5], stride=4, padding='SAME')
     net = lays.conv2d_transpose(net, 32, [5, 5], stride=2, padding='SAME')
     net = lays.conv2d_transpose(net, 1, [5, 5], stride=2, padding='SAME', activation_fn=tf.nn.tanh)
     return net
 
 import numpy as np
-from skimage import transform
-
-def resize_batch(imgs):
-    # A function to resize a batch of MNIST images to (32, 32)
-    # Args:
-    #   imgs: a numpy array of size [batch_size, 28 X 28].
-    # Returns:
-    #   a numpy array of size [batch_size, 32, 32].
-    imgs = imgs.reshape((-1, 28, 28, 1))
-    resized_imgs = np.zeros((imgs.shape[0], 32, 32, 1))
-    for i in range(imgs.shape[0]):
-        resized_imgs[i, ..., 0] = transform.resize(imgs[i, ..., 0], (32, 32))
-    return resized_imgs
-
 
 import tensorflow as tf
 
-ae_inputs = tf.placeholder(tf.float32, (None, 32, 32, 1))  # input to the network (MNIST images)
+ae_inputs = tf.placeholder(tf.float32, (None, xres,yres, 1))  # input to the network (MNIST images)
 ae_outputs = autoencoder(ae_inputs)  # create the Autoencoder network
 
 # calculate the loss and optimize the network
@@ -53,39 +40,37 @@ train_op = tf.train.AdamOptimizer(learning_rate=lr).minimize(loss)
 init = tf.global_variables_initializer()
 
 
-from tensorflow.examples.tutorials.mnist import input_data
-# read MNIST dataset
-mnist = input_data.read_data_sets("MNIST_data", one_hot=True)
-
 # calculate the number of batches per epoch
-batch_per_ep = mnist.train.num_examples // batch_size
-
+batch_per_ep = 10
+plotdata = []
+plotdata2 = []
+plotdata3 = []
 with tf.Session() as sess:
     sess.run(init)
     for ep in range(epoch_num):  # epochs loop
         for batch_n in range(batch_per_ep):  # batches loop
-            batch_img, batch_label = mnist.train.next_batch(batch_size)  # read a batch
-            batch_img = batch_img.reshape((-1, 28, 28, 1))               # reshape each sample to an (28, 28) image
-            batch_img = resize_batch(batch_img)                          # reshape the images to (32, 32)
+            batch_img = give_skymap(batch_size)
             _, c = sess.run([train_op, loss], feed_dict={ae_inputs: batch_img})
             print('Epoch: {} - cost= {:.5f}'.format((ep + 1), c))
 
-    # test the trained network
-    batch_img, batch_label = mnist.test.next_batch(50)
-    batch_img = resize_batch(batch_img)
-    recon_img = sess.run([ae_outputs], feed_dict={ae_inputs: batch_img})[0]
+    # test the trained network with good data
+        batch_img = give_skymap(batch_size)
+        theloss = sess.run([loss], feed_dict={ae_inputs: batch_img})[0]
+        plotdata.append([theloss,ep]) 
+   # test with bad data
+        batch_img = give_badskymap(batch_size)
+        theloss = sess.run([loss], feed_dict={ae_inputs: batch_img})[0]
+        plotdata2.append([theloss,ep]) 
 
-    # plot the reconstructed images and their ground truths (inputs)
-    import matplotlib.pyplot as plt
-    plt.title('Reconstructed Images')
-    for i in range(50):
-        plt.subplot(5, 10, i+1)
-        plt.imshow(recon_img[i, ..., 0], cmap='gray')
-
-    plt.savefig('fig1.png')
-    plt.show()
-    plt.title('Input Images')
-    for i in range(50):
-        plt.subplot(5, 10, i+1)
-        plt.imshow(batch_img[i, ..., 0], cmap='gray')
-    plt.savefig('fig2.png')
+        #batch_img = give_badskymap(batch_size,fnl=1e-3)
+        #theloss = sess.run([loss], feed_dict={ae_inputs: batch_img})[0]
+        #plotdata3.append([theloss,ep]) 
+plotdata = np.array(plotdata)
+plotdata2 = np.array(plotdata2)
+#plotdata3 = np.array(plotdata3)
+import matplotlib.pyplot as plt
+plt.scatter(plotdata.T[1],plotdata.T[0],marker=".")
+plt.scatter(plotdata2.T[1],plotdata2.T[0],marker="x")
+#plt.scatter(plotdata3.T[1],plotdata3.T[0],marker="X")
+plt.title('Loss vs Epoch')
+plt.savefig('loss2.png')
