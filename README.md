@@ -10,7 +10,11 @@ the gaussian maps. a cross for fnl = 1e-4. Thicker cross for fnl = 1e-3.
 ![loss2](loss2.png)
 ## Loss for fnl = 1e-3 compared to gaussian and fnl=1e-4
 ![loss](loss.png)
-
+## Loss for fnl = 1e-3 compared to gaussian after normalizing
+In the following plot the gaussian maps were generated after 
+calculating the power spectra of the non-gaussian maps, So that we
+can make sure that the maps have the same power spectra
+![loss_scaling](loss_scaling.png)
 What is interesting is that though the network never seems to
 learn the loss is already high for non gaussian maps.
 
