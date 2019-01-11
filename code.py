@@ -55,7 +55,7 @@ plotdata2 = []
 plotdata3 = []
 data = []
 for batch_n in range(batch_per_ep):
-    data.append(give_skymap(batch_size))
+    data.append(give_badskymap(batch_size,fnl=1e5))
 
 with tf.Session() as sess:
     sess.run(init)
@@ -74,7 +74,7 @@ with tf.Session() as sess:
         #theloss = sess.run([loss], feed_dict={ae_inputs: batch_img})[0]
         #plotdata2.append([theloss,ep]) 
 
-        batch_img = give_badskymap(batch_size,fnl=1e-3)
+        batch_img = give_badskymap(batch_size,fnl=1e5)
         theloss = sess.run([loss], feed_dict={ae_inputs: batch_img})[0]
         plotdata3.append([theloss,ep]) 
 plotdata = np.array(plotdata)
@@ -85,4 +85,4 @@ plt.scatter(plotdata.T[1],plotdata.T[0],marker=".")
 #plt.scatter(plotdata2.T[1],plotdata2.T[0],marker="x")
 plt.scatter(plotdata3.T[1],plotdata3.T[0],marker="X")
 plt.title('Loss vs Epoch')
-plt.savefig('loss_scaling.png')
+plt.savefig('loss_scaling_nongauss_train_norm.png')

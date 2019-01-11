@@ -15,6 +15,10 @@ In the following plot the gaussian maps were generated after
 calculating the power spectra of the non-gaussian maps, So that we
 can make sure that the maps have the same power spectra
 ![loss_scaling](loss_scaling.png)
+## Training with non gaussian maps
+We see that even if we train with non gaussain maps. The loss doesn't go down.
+![loss_scaling_nongauss_train](loss_scaling_nongauss_train.png)
+![loss_scaling_nongauss_train](loss_scaling_nongauss_train_norm.png)
 What is interesting is that though the network never seems to
 learn the loss is already high for non gaussian maps.
 
