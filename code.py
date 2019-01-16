@@ -2,7 +2,7 @@ import tensorflow.contrib.layers as lays
 from map_gen import *
 
 batch_size = 500  # Number of samples in each batch
-epoch_num = 20     # Number of epochs to train the network
+epoch_num = 10     # Number of epochs to train the network
 lr = 0.01        # Learning rate
 xres,yres,_ = get_res()
 print(xres,yres,xres*yres)
@@ -85,4 +85,4 @@ plt.scatter(plotdata.T[1],plotdata.T[0],marker=".")
 #plt.scatter(plotdata2.T[1],plotdata2.T[0],marker="x")
 plt.scatter(plotdata3.T[1],plotdata3.T[0],marker="X")
 plt.title('Loss vs Epoch')
-plt.savefig('loss_scaling_nongauss_train_norm.png')
+plt.savefig('loss_scaling_nongauss_train_norm_stdev.png')

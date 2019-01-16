@@ -22,7 +22,8 @@ def give_skymap(batch,fnl=1e-3):
     k = 0
     for _ in range(batch):
         skymap = hp.synfast(ttprime,NSIDE,new=True,verbose=False)
-        skymap = skymap/np.mean(skymap)
+        #skymap = skymap/np.mean(skymap)
+        skymap = skymap/np.std(skymap)
         skymap.resize(split(len(skymap)))
         batch_map.append(skymap) 
 
@@ -44,7 +45,8 @@ def give_badskymap(batch,fnl=1e-4):
         skymap = np.array(hp.synfast(tt,NSIDE,new=True,verbose=False))
         sqmap = np.square(skymap)
         skymap = skymap + (fnl/2.725)*(sqmap - np.full_like(skymap,np.mean(skymap)**2))
-        skymap = skymap/np.mean(skymap)
+        #skymap = skymap/np.mean(skymap)
+        skymap = skymap/np.std(skymap)
         #ttprime = np.array(hp.anafast(skymap,lmax=2506)) 
         #scale = np.dot(tt , ttprime)/(np.dot(tt , tt))
         skymap.resize(split(len(skymap)))
@@ -56,3 +58,4 @@ def get_res():
     return split(hp.nside2npix(NSIDE))
 if __name__ == "__main__":
     give_badskymap(2)
+    give_badskymap(2,1e5)

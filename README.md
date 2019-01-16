@@ -18,7 +18,10 @@ can make sure that the maps have the same power spectra
 ## Training with non gaussian maps
 We see that even if we train with non gaussain maps. The loss doesn't go down.
 ![loss_scaling_nongauss_train](loss_scaling_nongauss_train.png)
+### Normalized with mean
 ![loss_scaling_nongauss_train](loss_scaling_nongauss_train_norm.png)
+### Normalized with Standard deviation
+![loss_scaling_nongauss_train](loss_scaling_nongauss_train_norm_stdev.png)
 What is interesting is that though the network never seems to
 learn the loss is already high for non gaussian maps.
 
