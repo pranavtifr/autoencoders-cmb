@@ -26,9 +26,10 @@ def give_skymap(batch,fnl=1e-3):
         #skymap = skymap/np.std(skymap)
         #skymap.resize(split(len(skymap)))
         #batch_map.append(skymap) 
-        alms = hp.map2alm(skymap))
-        alms.resize(split(len(alms)))
-        batch_map.append(alms) 
+        alms = hp.map2alm(skymap)
+        image = make_alm_image(alms)
+        #alms.resize(split(len(alms)))
+        batch_map.append(image)
 
     return batch_map
 
@@ -54,14 +55,36 @@ def give_badskymap(batch,fnl=1e-4):
         #scale = np.dot(tt , ttprime)/(np.dot(tt , tt))
         #skymap.resize(split(len(skymap)))
         #batch_map.append(skymap)
-        alms = hp.map2alm(skymap))
-        alms.resize(split(len(alms)))
-        batch_map.append(alms) 
+        alms = hp.map2alm(skymap)
+        #alms.resize(split(len(alms)))
+        image = make_alm_image(alms)
+        #plt.imshow(image[0])
+        #plt.show()
+        #plt.imshow(image[1])
+        #plt.show()
+        batch_map.append(image)
 
     return batch_map
 
 def get_res():
     return split(hp.nside2npix(NSIDE))
+
+def make_alm_image(alms):
+    print(alms)
+    print(np.shape(alms))
+    
+    ssss = hp.sphtfunc.Alm()
+    lmax = 3*NSIDE -1
+    mag = np.zeros((lmax,lmax))
+    phase = np.zeros((lmax,lmax))
+    for l in range(lmax): 
+        for m in range(l):
+            mag[l][m] = np.abs(alms)[ssss.getidx(lmax,l,m)]
+            phase[l][m] = np.angle(alms)[ssss.getidx(lmax,l,m)]
+    return [mag,phase]
+
+
+
 if __name__ == "__main__":
-    give_badskymap(2)
-    give_badskymap(2,1e5)
+    give_badskymap(1)
+    #give_badskymap(2,1e5)
