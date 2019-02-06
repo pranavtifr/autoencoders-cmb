@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from essentials import *
 import healpy as hp
-NSIDE = 32
+NSIDE = 256
 def give_skymap(batch,fnl=1e-3):
     with open('./cmb-power-spectrum.txt') as csvfile:
         spectra = filereader(csvfile)
@@ -58,10 +58,20 @@ def give_badskymap(batch,fnl=1e-4):
         alms = hp.map2alm(skymap)
         #alms.resize(split(len(alms)))
         image = make_alm_image(alms)
-        #plt.imshow(image[0])
-        #plt.show()
-        #plt.imshow(image[1])
-        #plt.show()
+        plt.subplot(1,2,1)
+        plt.title("Mag")
+        plt.ylabel("l")
+        plt.xlabel("m")
+        plt.imshow(image[0])
+        plt.colorbar()
+        plt.subplot(1,2,2)
+        plt.title("phase")
+        plt.ylabel("l")
+        plt.xlabel("m")
+        plt.imshow(image[1])
+        plt.colorbar()
+        plt.savefig("image"+str(NSIDE)+".png")
+        plt.show()
         batch_map.append(image)
 
     return batch_map
