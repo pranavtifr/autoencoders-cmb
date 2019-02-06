@@ -3,7 +3,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 from essentials import *
 import healpy as hp
-NSIDE = 256
+NSIDE = 256 # You can change the NSIDE here to get better maps
+'''
+give_puremap() generates a map for the cl's read from the file cmb-power-spectrum.txt
+
+give_skymap() generates a gaussian map for the cl's generated for a non gaussian map 
+This is done to make sure that the power spectra is the same
+
+give_badskymap() generates a non gaussian map for the given cl's
+'''
+def give_puremap(batch):
+    with open('./cmb-power-spectrum.txt') as csvfile:
+        spectra = filereader(csvfile)
+        l = spectra.T[0]
+        tt = spectra.T[1]
+        te = spectra.T[2]
+        ee = spectra.T[3]
+        bb = spectra.T[4]
+        pp = spectra.T[5]
+    
+    batch_map=[]
+    for _ in range(batch):
+            # The following function creates the map as an numpy array with nested ordering
+        skymap = hp.synfast(tt,NSIDE,new=True,verbose=False) #You can also pass the other
+                                                             # cls here to get better maps
+        batch_map.append(skymap)
+    return np.array(batch_map)
+
+
+
 def give_skymap(batch,fnl=1e-3):
     with open('./cmb-power-spectrum.txt') as csvfile:
         spectra = filereader(csvfile)
@@ -25,15 +53,15 @@ def give_skymap(batch,fnl=1e-3):
         #skymap = skymap/np.mean(skymap)
         #skymap = skymap/np.std(skymap)
         #skymap.resize(split(len(skymap)))
-        #batch_map.append(skymap) 
-        alms = hp.map2alm(skymap)
-        image = make_alm_image(alms)
+        batch_map.append(skymap) 
+        #alms = hp.map2alm(skymap)
+        #image = make_alm_image(alms)
         #alms.resize(split(len(alms)))
-        batch_map.append(image)
+        #batch_map.append(image)
 
     return batch_map
 
-def give_badskymap(batch,fnl=1e-4):
+def give_badskymap(batch,fnl=1e-3):
     with open('./cmb-power-spectrum.txt') as csvfile:
         spectra = filereader(csvfile)
         l = spectra.T[0]
@@ -54,25 +82,11 @@ def give_badskymap(batch,fnl=1e-4):
         #ttprime = np.array(hp.anafast(skymap,lmax=2506)) 
         #scale = np.dot(tt , ttprime)/(np.dot(tt , tt))
         #skymap.resize(split(len(skymap)))
-        #batch_map.append(skymap)
-        alms = hp.map2alm(skymap)
+        batch_map.append(skymap)
+        #alms = hp.map2alm(skymap)
         #alms.resize(split(len(alms)))
-        image = make_alm_image(alms)
-        plt.subplot(1,2,1)
-        plt.title("Mag")
-        plt.ylabel("l")
-        plt.xlabel("m")
-        plt.imshow(image[0])
-        plt.colorbar()
-        plt.subplot(1,2,2)
-        plt.title("phase")
-        plt.ylabel("l")
-        plt.xlabel("m")
-        plt.imshow(image[1])
-        plt.colorbar()
-        plt.savefig("image"+str(NSIDE)+".png")
-        plt.show()
-        batch_map.append(image)
+        #image = make_alm_image(alms)
+        #batch_map.append(image)
 
     return batch_map
 
@@ -96,5 +110,7 @@ def make_alm_image(alms):
 
 
 if __name__ == "__main__":
+    k = give_puremap(1)  
+    print(k[0])
     give_badskymap(1)
     #give_badskymap(2,1e5)
